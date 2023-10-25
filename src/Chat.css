@@ -1,0 +1,48 @@
+.chat-container {
+  display: flex;
+  height: 100vh;
+}
+
+.left-panel {
+  width: 250px;
+  padding: 12px 0;
+  overflow-y: auto;
+  background-color: rgb(62, 62, 186);
+}
+
+.user {
+  display: flex;
+  cursor: pointer;
+  padding: .5rem 1rem;
+}
+
+.user.active {
+  background-color: rgb(199, 71, 71);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  margin-top: .5rem;
+}
+
+i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: red;
+  display: block;
+}
+
+.message-panel {
+  flex-grow: 1;
+}
+
+.header {
+  padding: 1.5rem 1rem;
+}
+
+.input {
+  /* height: 20px; */
+  resize: none;
+}
