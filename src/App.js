@@ -5,7 +5,7 @@ import Chat from './Chat';
 import './App.css';
 
 function App() {
-  const [username, setUsername] = useState(null)
+  const [usernameAlreadySelected, setUsernameAlreadySelected] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
   // const [rooms, setRooms] = useState([])
@@ -24,7 +24,7 @@ function App() {
       return;
     }
 
-    setUsername(username)
+    setUsernameAlreadySelected(true)
     socket.auth = { username }
     socket.connect()
     nameInput.current.value = ''
@@ -51,10 +51,27 @@ function App() {
   // }
 
   useEffect(() => {
+    const sessionID = localStorage.getItem("sessionID")
+
+    // 如果有 sessionID 直接就可以連線了，server 會先判斷如果有 sessionID 會去找對應的 session
+    if (sessionID) {
+      console.log(23424)
+      setUsernameAlreadySelected(true)
+      socket.auth = { sessionID }
+      socket.connect()
+    }
+
+    socket.on("session", ({ sessionID, userID }) => {
+      socket.auth = { sessionID }
+      
+      localStorage.setItem("sessionID", sessionID)
+      socket.userID = userID
+    })
+
     socket.on('connect_error', (err) => {
       console.log(err);
       if (err.message === 'invalid username') {
-        setUsername(null)
+        setUsernameAlreadySelected(false)
       }
     })
 
@@ -64,8 +81,8 @@ function App() {
   }, [])
   return (
     <>
-      {username && <Chat />}
-      {!username &&
+      {usernameAlreadySelected && <Chat />}
+      {!usernameAlreadySelected &&
         <div className='container'>
           <div className='login-wrap'>
             <form className='login-form' onSubmit={onLogin}>

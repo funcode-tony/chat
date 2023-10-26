@@ -17,6 +17,8 @@ const Chat = () => {
   const sendPrivateMessage = (e) => {
     e.preventDefault()
     const content = textarea.current.value
+
+    console.log(content);
     
     if (selectedUser) {
       socket.emit("private message", {
@@ -30,13 +32,30 @@ const Chat = () => {
           content,
           fromSelf: true,
         })
+        console.log(updated);
+        return updated
       })
 
       textarea.current.value = ''
     }
   }
 
+  const StatusIcon = ({ isConnected }) => {
+    return (
+      <i className={isConnected ? 'icon connected' : 'icon'}></i>
+    )
+  }
+
   useEffect(() => {
+    socket.on("connect", () => {
+      const updated = [...users]
+      updated.forEach((user) => {
+        if (user.self) {
+          user.connected = true
+        }
+      })
+      setUsers(updated)
+    })
     socket.on("users", (users) => {
       users.forEach(user => {
         user.self = user.userID === socket.id
@@ -61,11 +80,60 @@ const Chat = () => {
       })
     })
 
+    socket.on("private message", ({ content, from }) => {
+      const updateUsers = [...users]
+      for(let i = 0; i < users.length; i++) {
+        const user = updateUsers[i]
+        if (user.userID === from) {
+          user.messages.push({
+            content,
+            fromSelf: false,
+          })
+
+          console.log(user.userID, selectedUser,selectedUser?.userID, user.userID !== selectedUser?.userID);
+
+          if (user.userID !== selectedUser?.userID) {
+            user.hasNewMessages = true
+          }
+
+          break;
+        }
+      }
+      setUsers(updateUsers)
+    })
+
+    socket.on("user disconnect", (id) => {
+      const updateUsers = [...users]
+      for (let i = 0; i < updateUsers.length; i++) {
+        const user = updateUsers[i]
+        if (user.userID === id) {
+          user.connected = false
+          break;
+        }
+      }
+      console.log(updateUsers)
+      setUsers(updateUsers)
+    })
+
+    socket.on("disconnect", () => {
+      const updated = [...users]
+      updated.forEach((user) => {
+        if (user.self) {
+          user.connected = false
+        }
+      })
+      setUsers(updated)
+    })
+
     return () => {
       socket.off("users")
       socket.off("user connected")
+      socket.off("user disconnect")
+      socket.off("private message")
+      socket.off("connect")
+      socket.off("disconnect")
     }
-  }, [socket])
+  }, [socket, users, selectedUser])
   return (
     <div className='chat-container'>
       <div className='left-panel'>
@@ -76,15 +144,16 @@ const Chat = () => {
             onClick={() => { 
               if (user.self) return;
               console.log(user);
-              setSelectedUser(user)
-              // 這句不確定會不會影響到，若是影響畫面可能就得用usestate
+              // 需要想一下是否有需要用原先一起沿用user的物件，
+              // 因為目前寫法 selecteduser 和 user 都是會互相影響的
               user.hasNewMessages = false
+              setSelectedUser(user)
             }}
           >
             <div className='description'>
-              <div className='name'>{user.self ? '[yourself]' : ''}{user.username}</div>
+              <div className='name'>{user.self ? '(yourself) ' : ''}{user.username}</div>
               <div className='status'>
-                <i></i>
+                <StatusIcon isConnected={user.connected}/>
               </div>
             </div>
             {/* 如果有新訊息跳一個驚嘆號 */}
@@ -98,8 +167,15 @@ const Chat = () => {
             {selectedUser.username}
           </div>
           <hr style={{marginBottom: '1.5rem'}}/>
-          <ul className='message'>
-
+          <ul className='message-list'>
+            {selectedUser.messages.map((message, index) => (
+              <li key={message.content + index}>
+                <div className='sender'>
+                  {message.fromSelf ? '(yourself)' : selectedUser.username}
+                </div>
+                {message.content}
+              </li>
+            ))}
           </ul>
           <form onSubmit={sendPrivateMessage}>
             <textarea

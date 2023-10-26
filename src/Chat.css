@@ -12,6 +12,8 @@
 
 .user {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
   padding: .5rem 1rem;
 }
@@ -26,12 +28,16 @@
   margin-top: .5rem;
 }
 
-i {
+.icon {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background-color: red;
   display: block;
+}
+
+.icon.connected {
+  background-color: #86bb71;
 }
 
 .message-panel {
@@ -45,4 +51,28 @@ i {
 .input {
   /* height: 20px; */
   resize: none;
+}
+
+.name {
+  color: white;
+}
+
+.new-message {
+  width: 25px;
+  height: 25px;
+  line-height: 25px;
+  font-size: 1.2rem;
+  color: white;
+  background-color: rgb(249, 57, 57);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.sender {
+  font-weight: 600;
+}
+
+.message-list {
+  list-style: none;
+  padding-left: 1rem;
 }
