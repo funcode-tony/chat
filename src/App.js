@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
 // import { v4 as uuidv4 } from 'uuid';
 import socket from './socket';
-import Chat from './Chat';
+// import Chat from './Chat';
+import Draw from './Draw';
 import './App.css';
 
 function App() {
@@ -81,7 +82,7 @@ function App() {
   }, [])
   return (
     <>
-      {usernameAlreadySelected && <Chat />}
+      {usernameAlreadySelected && <Draw />}
       {!usernameAlreadySelected &&
         <div className='container'>
           <div className='login-wrap'>
